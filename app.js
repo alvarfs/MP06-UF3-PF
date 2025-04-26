@@ -11,7 +11,7 @@ function App() {
     <>
       <userContext.Provider value={{user, setUser}}>
         <aside className="sidebar card">
-          
+          <Panel />
         </aside>
         <main className="main">
           <Card />
@@ -39,12 +39,13 @@ function Card() {
 function TaskSection() {
   const {user, setUser} = React.useContext(userContext);
   const [input, setInput] = React.useState("");
-  
+  const [taskId, setTaskId] = React.useState(0);
+
   return (
     <div id="taskSection" className={!user.name ? "hidden" : ""}>
       <ul id="taskList">
         {user?.tasks?.map(task =>
-          <Task task={task} />
+          <Task key={task.id} task={task} />
         )}
       </ul>
       <input 
@@ -52,10 +53,32 @@ function TaskSection() {
         id="newTaskInput" 
         placeholder="Nueva tarea..." 
         onChange={e => setInput(e.target.value)}
+        value={input}
       />
-      <button onClick={() => AddTask(input, user, setUser)}>Añadir Tarea</button>
+      <button onClick={() => AddTask()}>Añadir Tarea</button>
     </div>
   );
+
+  function AddTask() {
+    if (input.trim() == "") return;
+
+    const taskList = [...user.tasks];
+        
+    taskList.push({
+      id: taskId,
+      name: input,
+      done: false
+    });
+  
+    const updatedUser = {
+      ...user,
+      tasks: taskList
+    };
+  
+    setUser(updatedUser);
+    setTaskId(taskId + 1);
+    setInput("");
+  }
 }
 
 function Task({task}) {
@@ -74,31 +97,62 @@ function Task({task}) {
 
 // ------------ PANEL SECTION ------------- //
 
-// ...
+function Panel() {
+  const[theme, setTheme] = React.useState(true);
+
+  const {user, setUser} = React.useContext(userContext);
+  const [userList, setUserList] = React.useState([]);
+
+  const [input, setInput] = React.useState("");
+  const [userId, setUserId] = React.useState(0);
+
+  return(
+    <>
+      <h2>Usuarios</h2>
+      <ul id="taskList">
+        {userList?.map((user, index) =>
+          <User key={index} user={user} />
+        )}
+      </ul>
+      <input 
+        type="text" 
+        id="newUserInput" 
+        placeholder="Nuevo usuario..." 
+        onChange={e => setInput(e.target.value)}
+        value={input}
+      />
+      <button onClick={() => AddUser()}>Añadir Usuario</button>
+      <button onClick={() => ToggleTheme(theme, setTheme)} style={{marginTop: "auto"}}>🌙/☀️ Tema</button>
+    </>
+  );
+
+  function AddUser() {
+    if (input.trim() == "") return;
+
+    const currentList = [...userList];
+        
+    currentList.push({
+      name: input,
+      tasks: []
+    });
+  
+    setUserList(currentList);
+    setTaskId(taskId + 1);
+    setInput("");
+  }
+}
+
+function User({key, user}) {
+  return (
+    <h3>{user.name}</h3>
+  )
+}
 
 // ------------- CARD FUNCTIONS ------------- //
 
-function AddTask(newName, user, setUser) {
-  const taskList = [...user.tasks];
-  if (newName.trim() === "") return;
-      
-  taskList.push({
-    id: user.tasks.length + 1,
-    name: newName,
-    done: false
-  });
-
-  const updatedUser = {
-    ...user,
-    tasks: taskList
-  };
-
-  setUser(updatedUser);
-}
-
 function ToggleTask(id, user, setUser) {
   const taskList = user.tasks.map(task => {
-    if (task.id === id) {
+    if (task.id == id) {
       return {
         id: task.id,
         name: task.name,
@@ -129,12 +183,12 @@ function DeleteTask(id, user, setUser) {
 }
 
 function EditTask(id, user, setUser) {
-  const selectedTask = user.tasks.find(task => task.id === id)
+  const selectedTask = user.tasks.find(task => task.id == id)
   const newTaskName = prompt("Editar tarea:", selectedTask.name);
 
-  if (newTaskName !== null && newTaskName.trim() !== "") {
+  if (newTaskName != null && newTaskName.trim() != "") {
     const taskList = user.tasks.map(task => {
-      if (task.id === id) {
+      if (task.id == id) {
         return {
           id: task.id,
           name: newTaskName,
@@ -156,7 +210,17 @@ function EditTask(id, user, setUser) {
 
 // ----------- PANEL FUNCTIONS ------------ //
 
-// ...
+function ToggleTheme(theme, setTheme) {
+  if (theme) {
+    document.body.classList.add("dark");
+    document.body.classList.remove("light");
+  } else {
+    document.body.classList.add("light");
+    document.body.classList.remove("dark");
+  }
+
+  setTheme(!theme);
+}
 
 // ------------------------------------------ //
 
