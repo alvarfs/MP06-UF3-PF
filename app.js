@@ -2,7 +2,7 @@ const userContext = React.createContext();
 const userListContext = React.createContext();
 
 function App() {
-  const [currentUser, setCurrentUser] = React.useState([]);
+  const [currentUser, setCurrentUser] = React.useState({});
   const [userList, setUserList] = React.useState([]);
 
   return (
@@ -124,6 +124,7 @@ function Panel() {
         value={input}
       />
       <button onClick={() => AddUser()}>Añadir Usuario</button>
+      <UserInfo />
       <button onClick={() => ToggleTheme(theme, setTheme)} style={{marginTop: "auto"}}>
         🌙/☀️ Tema
       </button>
@@ -158,6 +159,8 @@ function User({user}) {
   )
 
   function SelectUser() {
+    if (user.id == currentUser.id) return;
+
     const updatedList = userList.map(user => {
       if (currentUser.id == user.id) {
         return currentUser;
@@ -167,6 +170,33 @@ function User({user}) {
 
     setUserList(updatedList);
     setCurrentUser(user);
+  }
+}
+
+function UserInfo() {
+  const {currentUser, setCurrentUser} = React.useContext(userContext);
+  const {userList, setUserList} = React.useContext(userListContext);
+  const doneTasks = currentUser?.tasks?.filter(t => t.done).length;
+
+  return (
+    <div id="userInfo" className={!currentUser.name ? "hidden" : ""}>
+      <hr></hr>
+      <p id="userName">{currentUser?.name}</p>
+      <p id="userStats">{`Tareas: ${doneTasks} / ${currentUser?.tasks?.length} completadas`}</p>
+      <button onClick={() => DeselectUser()}>Deseleccionar</button>
+    </div>
+  );
+
+  function DeselectUser() {
+    const updatedList = userList.map(user => {
+      if (currentUser.id == user.id) {
+        return currentUser;
+      }
+      return user;
+    })
+
+    setUserList(updatedList);
+    setCurrentUser({});
   }
 }
 
@@ -243,6 +273,7 @@ function ToggleTheme(theme, setTheme) {
 
   setTheme(!theme);
 }
+
 // ------------------------------------------ //
 
 const app = document.getElementById('app');
