@@ -1,21 +1,21 @@
 const userContext = React.createContext();
+const userListContext = React.createContext();
 
 function App() {
-  // const [user, setUser] = React.useState();
-  const [user, setUser] = React.useState({
-    name: "eilouX",
-    tasks: []
-  });
+  const [currentUser, setCurrentUser] = React.useState([]);
+  const [userList, setUserList] = React.useState([]);
 
   return (
     <>
-      <userContext.Provider value={{user, setUser}}>
-        <aside className="sidebar card">
-          <Panel />
-        </aside>
-        <main className="main">
-          <Card />
-        </main>
+      <userContext.Provider value={{currentUser, setCurrentUser}}>
+        <userListContext.Provider value={{userList, setUserList}}>
+          <aside className="sidebar card">
+            <Panel />
+          </aside>
+          <main className="main">
+            <Card />
+          </main>
+        </userListContext.Provider>
       </userContext.Provider>
     </>
   );
@@ -24,12 +24,12 @@ function App() {
 // -------------- CARD SECTION -------------- //
 
 function Card() {
-  const {user} = React.useContext(userContext);
+  const {currentUser} = React.useContext(userContext);
 
   return (
     <div className="card">
       <h1 id="mainTitle">
-        {user.name ? `Tareas de ${user.name}` : "Seleccione un usuario"}
+        {currentUser.name ? `Tareas de ${currentUser.name}` : "Seleccione un usuario"}
       </h1>
       <TaskSection/>
     </div>
@@ -37,14 +37,14 @@ function Card() {
 }
 
 function TaskSection() {
-  const {user, setUser} = React.useContext(userContext);
+  const {currentUser, setCurrentUser} = React.useContext(userContext);
   const [input, setInput] = React.useState("");
   const [taskId, setTaskId] = React.useState(0);
 
   return (
-    <div id="taskSection" className={!user.name ? "hidden" : ""}>
+    <div id="taskSection" className={!currentUser.name ? "hidden" : ""}>
       <ul id="taskList">
-        {user?.tasks?.map(task =>
+        {currentUser?.tasks?.map(task =>
           <Task key={task.id} task={task} />
         )}
       </ul>
@@ -62,7 +62,7 @@ function TaskSection() {
   function AddTask() {
     if (input.trim() == "") return;
 
-    const taskList = [...user.tasks];
+    const taskList = [...currentUser.tasks];
         
     taskList.push({
       id: taskId,
@@ -71,25 +71,25 @@ function TaskSection() {
     });
   
     const updatedUser = {
-      ...user,
+      ...currentUser,
       tasks: taskList
     };
   
-    setUser(updatedUser);
+    setCurrentUser(updatedUser);
     setTaskId(taskId + 1);
     setInput("");
   }
 }
 
 function Task({task}) {
-  const {user, setUser} = React.useContext(userContext);
+  const {currentUser, setCurrentUser} = React.useContext(userContext);
 
   return(
     <li key={task.id} className={task.done ? "completed" : ""}>
-      <span onClick={() => ToggleTask(task.id, user, setUser)}>{task.name}</span>
+      <span onClick={() => ToggleTask(task.id, currentUser, setCurrentUser)}>{task.name}</span>
       <div className="actions">
-        <button onClick={() => EditTask(task.id, user, setUser)}>✏️</button>
-        <button onClick={() => DeleteTask(task.id, user, setUser)}>🗑️</button>
+        <button onClick={() => EditTask(task.id, currentUser, setCurrentUser)}>✏️</button>
+        <button onClick={() => DeleteTask(task.id, currentUser, setCurrentUser)}>🗑️</button>
       </div>
     </li>
   );
@@ -98,13 +98,15 @@ function Task({task}) {
 // ------------ PANEL SECTION ------------- //
 
 function Panel() {
-  const[theme, setTheme] = React.useState(true);
-
-  const {user, setUser} = React.useContext(userContext);
-  const [userList, setUserList] = React.useState([]);
+  const {currentUser, setCurrentUser} = React.useContext(userContext);
+  const {userList, setUserList} = React.useContext(userListContext);
+  const [userId, setUserId] = React.useState(0);
 
   const [input, setInput] = React.useState("");
-  const [userId, setUserId] = React.useState(0);
+  const [theme, setTheme] = React.useState(true);
+
+  console.log(currentUser)
+  console.log(userList)
 
   return(
     <>
@@ -122,7 +124,9 @@ function Panel() {
         value={input}
       />
       <button onClick={() => AddUser()}>Añadir Usuario</button>
-      <button onClick={() => ToggleTheme(theme, setTheme)} style={{marginTop: "auto"}}>🌙/☀️ Tema</button>
+      <button onClick={() => ToggleTheme(theme, setTheme)} style={{marginTop: "auto"}}>
+        🌙/☀️ Tema
+      </button>
     </>
   );
 
@@ -132,20 +136,38 @@ function Panel() {
     const currentList = [...userList];
         
     currentList.push({
+      id: userId,
       name: input,
       tasks: []
     });
   
     setUserList(currentList);
-    setTaskId(taskId + 1);
+    setUserId(userId + 1);
     setInput("");
   }
 }
 
-function User({key, user}) {
+function User({user}) {
+  const {currentUser, setCurrentUser} = React.useContext(userContext);
+  const {userList, setUserList} = React.useContext(userListContext);
+
   return (
-    <h3>{user.name}</h3>
+    <li onClick={() => SelectUser()}>
+      {user.name}
+    </li>
   )
+
+  function SelectUser() {
+    const updatedList = userList.map(user => {
+      if (currentUser.id == user.id) {
+        return currentUser;
+      }
+      return user;
+    })
+
+    setUserList(updatedList);
+    setCurrentUser(user);
+  }
 }
 
 // ------------- CARD FUNCTIONS ------------- //
@@ -221,7 +243,6 @@ function ToggleTheme(theme, setTheme) {
 
   setTheme(!theme);
 }
-
 // ------------------------------------------ //
 
 const app = document.getElementById('app');
