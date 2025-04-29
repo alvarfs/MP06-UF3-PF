@@ -86,7 +86,7 @@ function Task({task}) {
 
   return(
     <li key={task.id} className={task.done ? "completed" : ""}>
-      <span onClick={() => ToggleTask(task.id, currentUser, setCurrentUser)}>{task.name}</span>
+      <span onClick={() => ToggleTask(task.id, currentUser, setCurrentUser)} style={{cursor: "pointer"}}>{task.name}</span>
       <div className="actions">
         <button onClick={() => EditTask(task.id, currentUser, setCurrentUser)}>✏️</button>
         <button onClick={() => DeleteTask(task.id, currentUser, setCurrentUser)}>🗑️</button>
@@ -113,7 +113,7 @@ function Panel() {
       <h2>Usuarios</h2>
       <ul id="taskList">
         {userList?.map((user, index) =>
-          <User key={index} user={user} />
+          <UserTag key={index} user={user} />
         )}
       </ul>
       <input 
@@ -148,31 +148,6 @@ function Panel() {
   }
 }
 
-function User({user}) {
-  const {currentUser, setCurrentUser} = React.useContext(userContext);
-  const {userList, setUserList} = React.useContext(userListContext);
-
-  return (
-    <li onClick={() => SelectUser()}>
-      {user.name}
-    </li>
-  )
-
-  function SelectUser() {
-    if (user.id == currentUser.id) return;
-
-    const updatedList = userList.map(user => {
-      if (currentUser.id == user.id) {
-        return currentUser;
-      }
-      return user;
-    })
-
-    setUserList(updatedList);
-    setCurrentUser(user);
-  }
-}
-
 function UserInfo() {
   const {currentUser, setCurrentUser} = React.useContext(userContext);
   const {userList, setUserList} = React.useContext(userListContext);
@@ -200,6 +175,35 @@ function UserInfo() {
   }
 }
 
+function UserTag({user}) {
+  const {currentUser, setCurrentUser} = React.useContext(userContext);
+  const {userList, setUserList} = React.useContext(userListContext);
+
+  return (
+    <li 
+      onClick={() => SelectUser()} 
+      style={{
+        cursor: "pointer", 
+        fontWeight: user.id == currentUser.id ? "bold" : ""}} >
+      {user.name}
+    </li>
+  )
+
+  function SelectUser() {
+    if (user.id == currentUser.id) return;
+
+    const updatedList = userList.map(user => {
+      if (currentUser.id == user.id) {
+        return currentUser;
+      }
+      return user;
+    })
+
+    setUserList(updatedList);
+    setCurrentUser(user);
+  }
+}
+
 // ------------- CARD FUNCTIONS ------------- //
 
 function ToggleTask(id, user, setUser) {
@@ -220,17 +224,6 @@ function ToggleTask(id, user, setUser) {
     tasks: taskList
   };
 
-  setUser(updatedUser);
-}
-
-function DeleteTask(id, user, setUser) {
-  const updatedUser = {
-    ...user,
-    tasks: user.tasks.filter(task => 
-      task.id !== id
-    )
-  };
-  
   setUser(updatedUser);
 }
 
@@ -258,6 +251,17 @@ function EditTask(id, user, setUser) {
 
     setUser(updatedUser);
   }
+}
+
+function DeleteTask(id, user, setUser) {
+  const updatedUser = {
+    ...user,
+    tasks: user.tasks.filter(task => 
+      task.id !== id
+    )
+  };
+  
+  setUser(updatedUser);
 }
 
 // ----------- PANEL FUNCTIONS ------------ //
