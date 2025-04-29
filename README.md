@@ -39,7 +39,7 @@ App
 
 ## Hooks principales:
 
-- **currentUser:** Es el usuario que esta seleccionado actualmente.
+- **currentUser:** Indica el usuario que esta seleccionado actualmente.
 - **userList:** Lista total de todos los usuarios de la pagina web.
 - **userId:** Contador para añadir id's unicos para los nuevos usuarios.
 - **taskId:** Contador para añadir id's unicos para las nuevas tareas.
